@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>🐵 Juego de Operaciones</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Comic Sans MS', sans-serif;
+      overflow: hidden;
+      background: url('e9da4bfd-6d64-43f3-81b1-7afb2eb39497.png') no-repeat center center fixed;
+      background-size: cover;
+    }
+
+    #app {
+      position: absolute;
+      top: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.85);
+      border: 4px solid #8b5cf6;
+      border-radius: 20px;
+      padding: 25px;
+      width: 440px;
+      text-align: center;
+      box-shadow: 0 0 25px rgba(123, 97, 255, 0.6);
+      color: #222;
+    }
+
+    h1 {
+      font-size: 28px;
+      color: #6d28d9;
+      text-shadow: 1px 1px 3px #b3a3ff;
+    }
+
+    #puntos {
+      font-size: 22px;
+      color: #16a34a;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+
+    #operacion, #respuesta {
+      font-size: 20px;
+      padding: 8px;
+      border-radius: 10px;
+      border: 2px solid #a78bfa;
+      background: #f3e8ff;
+      color: #4c1d95;
+      outline: none;
+    }
+
+    #respuesta {
+      width: 80px;
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    #verificar, #nuevo {
+      font-size: 18px;
+      padding: 8px 16px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #7c3aed, #9333ea);
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.3s;
+    }
+
+    #verificar:hover, #nuevo:hover {
+      transform: scale(1.1);
+      background: linear-gradient(135deg, #a78bfa, #c084fc);
+    }
+
+    #ejercicio {
+      font-size: 32px;
+      margin: 15px;
+      color: #4c1d95;
+    }
+
+    #resultado {
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 10px;
+    }
+
+    canvas.confetti {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>🐵 Juego de Operaciones</h1>
+    <div id="puntos">Puntos: 0 🏆</div>
+    <p>Selecciona una operación y escribe el resultado correcto</p>
+    <div style="margin:10px;">
+      <label for="operacion">Operación:</label>
+      <select id="operacion">
+        <option value="suma">Suma</option>
+        <option value="resta">Resta</option>
+        <option value="multiplicacion">Multiplicación</option>
+        <option value="division">División</option>
+      </select>
+      <button id="nuevo">🔁 Nuevo</button>
+    </div>
+    <div id="ejercicio"></div>
+    <input id="respuesta" type="number" placeholder="Tu respuesta">
+    <button id="verificar">✅ Verificar</button>
+    <p id="resultado"></p>
+  </div>
+
+  <canvas class="confetti"></canvas>
+
+  <script>
+    const ejercicioEl = document.getElementById("ejercicio");
+    const resultadoEl = document.getElementById("resultado");
+    const respuestaEl = document.getElementById("respuesta");
+    const operacionEl = document.getElementById("operacion");
+    const puntosEl = document.getElementById("puntos");
+
+    let numero1, numero2, operacion, resultadoCorrecto, puntos = 0;
+    let confetiActivo = false;
+
+    function generarEjercicio() {
+      numero1 = Math.floor(Math.random() * 10) + 1;
+      numero2 = Math.floor(Math.random() * 10) + 1;
+      operacion = operacionEl.value;
+
+      if (operacion === "suma") {
+        resultadoCorrecto = numero1 + numero2;
+        ejercicioEl.textContent = `${numero1} + ${numero2} = ?`;
+      } else if (operacion === "resta") {
+        resultadoCorrecto = numero1 - numero2;
+        ejercicioEl.textContent = `${numero1} - ${numero2} = ?`;
+      } else if (operacion === "multiplicacion") {
+        resultadoCorrecto = numero1 * numero2;
+        ejercicioEl.textContent = `${numero1} × ${numero2} = ?`;
+      } else if (operacion === "division") {
+        resultadoCorrecto = numero1;
+        const producto = numero1 * numero2;
+        ejercicioEl.textContent = `${producto} ÷ ${numero2} = ?`;
+      }
+
+      resultadoEl.textContent = "";
+      respuestaEl.value = "";
+      respuestaEl.focus();
+    }
+
+    document.getElementById("nuevo").onclick = generarEjercicio;
+
+    document.getElementById("verificar").onclick = function() {
+      const respuesta = parseFloat(respuestaEl.value);
+      if (isNaN(respuesta)) {
+        resultadoEl.textContent = "⚠️ Escribe un número.";
+        resultadoEl.style.color = "orange";
+        return;
+      }
+
+      if (Math.abs(respuesta - resultadoCorrecto) < 0.001) {
+        resultadoEl.textContent = "🎉 ¡Correcto!";
+        resultadoEl.style.color = "green";
+        puntos++;
+        puntosEl.textContent = `Puntos: ${puntos} 🏆`;
+        lanzarConfeti();
+      } else {
+        resultadoEl.textContent = `❌ Incorrecto. Era ${resultadoCorrecto}.`;
+        resultadoEl.style.color = "red";
+      }
+    };
+
+    generarEjercicio();
+
+    // 🎊 Confeti animado (por 3 segundos)
+    const canvas = document.querySelector('.confetti');
+    const ctx = canvas.getContext('2d');
+    let confettis = [];
+    let animando = false;
+
+    function lanzarConfeti() {
+      if (confetiActivo) return; // evitar múltiples lanzamientos
+      confetiActivo = true;
+      confettis = [];
+
+      for (let i = 0; i < 120; i++) {
+        confettis.push({
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * -50,
+          r: Math.random() * 8 + 2,
+          c: `hsl(${Math.random() * 360}, 100%, 60%)`,
+          s: Math.random() * 3 + 2
+        });
+      }
+
+      let tiempoInicio = Date.now();
+      animando = true;
+      function animarConfeti() {
+        if (!animando) return;
+        const tiempo = Date.now() - tiempoInicio;
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        confettis.forEach((p) => {
+          p.y += p.s;
+          p.x += Math.sin(p.y * 0.05);
+          if (p.y > window.innerHeight) p.y = 0;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.c;
+          ctx.fill();
+        });
+
+        if (tiempo < 3000) {
+          requestAnimationFrame(animarConfeti);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          confetiActivo = false;
+        }
+      }
+      animarConfeti();
+    }
+
+    function ajustarCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.onresize = ajustarCanvas;
+    ajustarCanvas();
+  </script>
+</body>
+</html>
