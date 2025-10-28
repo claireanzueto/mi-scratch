@@ -12,9 +12,38 @@
       background-size: cover;
     }
 
+    /* 🌈 MENÚ SUPERIOR */
+    .menu {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background: linear-gradient(135deg, #7c3aed, #9333ea);
+      padding: 12px 0;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 1000;
+    }
+
+    .menu a {
+      color: white;
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0 20px;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      transition: background 0.3s, transform 0.2s;
+    }
+
+    .menu a:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+
     #app {
       position: absolute;
-      top: 60px;
+      top: 90px; /* 🔺 Ajustado para que no se tape con el menú */
       left: 50%;
       transform: translateX(-50%);
       background: rgba(255, 255, 255, 0.85);
@@ -95,6 +124,15 @@
   </style>
 </head>
 <body>
+
+  <!-- 🌈 MENÚ SUPERIOR -->
+  <div class="menu">
+    <a href="suma.html">➕ Suma</a>
+    <a href="resta.html">➖ Resta</a>
+    <a href="multiplicacion.html">✖ Multiplicación</a>
+    <a href="division.html">➗ División</a>
+  </div>
+
   <div id="app">
     <h1>🐵 Juego de Operaciones</h1>
     <div id="puntos">Puntos: 0 🏆</div>
@@ -163,10 +201,8 @@
       }
 
       if (Math.abs(respuesta - resultadoCorrecto) < 0.001) {
-        resultadoEl.textContent = "🎉 ¡Correcto!";
-        resultadoEl.style.color = "green";
-        puntos++;
-        puntosEl.textContent = `Puntos: ${puntos} 🏆`;
+        resultadoEl.textContent = "🎉 ¡Correcto!"; resultadoEl.style.color = "green";
+        puntos++; puntosEl.textContent = `Puntos: ${puntos} 🏆`;
         lanzarConfeti();
       } else {
         resultadoEl.textContent = `❌ Incorrecto. Era ${resultadoCorrecto}.`;
@@ -176,17 +212,15 @@
 
     generarEjercicio();
 
-    // 🎊 Confeti animado (por 3 segundos)
+    // 🎊 CONFETI
     const canvas = document.querySelector('.confetti');
     const ctx = canvas.getContext('2d');
     let confettis = [];
     let animando = false;
-
     function lanzarConfeti() {
-      if (confetiActivo) return; // evitar múltiples lanzamientos
+      if (confetiActivo) return;
       confetiActivo = true;
       confettis = [];
-
       for (let i = 0; i < 120; i++) {
         confettis.push({
           x: Math.random() * window.innerWidth,
@@ -196,40 +230,27 @@
           s: Math.random() * 3 + 2
         });
       }
-
       let tiempoInicio = Date.now();
       animando = true;
       function animarConfeti() {
         if (!animando) return;
         const tiempo = Date.now() - tiempoInicio;
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         confettis.forEach((p) => {
-          p.y += p.s;
-          p.x += Math.sin(p.y * 0.05);
+          p.y += p.s; p.x += Math.sin(p.y * 0.05);
           if (p.y > window.innerHeight) p.y = 0;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = p.c;
-          ctx.fill();
+          ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = p.c; ctx.fill();
         });
-
-        if (tiempo < 3000) {
-          requestAnimationFrame(animarConfeti);
-        } else {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          confetiActivo = false;
-        }
+        if (tiempo < 3000) { requestAnimationFrame(animarConfeti); }
+        else { ctx.clearRect(0, 0, canvas.width, canvas.height); confetiActivo = false; }
       }
       animarConfeti();
     }
-
     function ajustarCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     }
-    window.onresize = ajustarCanvas;
-    ajustarCanvas();
+    window.onresize = ajustarCanvas; ajustarCanvas();
   </script>
 </body>
 </html>
